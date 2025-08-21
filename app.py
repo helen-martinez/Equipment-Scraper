@@ -233,7 +233,7 @@ if uploaded_file:
         wb = openpyxl.load_workbook(template_path, keep_vba=True)
 
         # Select the sheet where you want to write the data
-        ws = wb["Scraped Data"]  # Adjust if your sheet has a different name
+        ws = wb["Sheet 1"]  # Adjust if your sheet has a different name
 
         # Optional: Clear existing rows starting from row 2
         for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
