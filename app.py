@@ -18,7 +18,7 @@ def Fastline(url_list, progress_callback=None):
         equipment_dictionary = {}
 
         title_tag = x.find('title')
-        equipment_dictionary["Title"] = title_tag.get_text(strip=True)[7:-8] if title_tag else ''
+        equipment_dictionary["Title"] = title_tag.get_text(strip=True)[5:-8] if title_tag else ''
 
         image_div = x.find('div', class_='item', attrs={'data-index': '0'})
         image_src = image_div.img['src'] if image_div and image_div.img else ''
