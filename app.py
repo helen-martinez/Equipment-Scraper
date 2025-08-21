@@ -5,11 +5,36 @@ from bs4 import BeautifulSoup
 import io
 import openpyxl
 from openpyxl.cell.cell import Cell
+import os
+from urllib.parse import urlparse
+from pathlib import Path
+
+def save_image(img_url, folder_path, filename_prefix):
+    """Download an image from img_url and save it to folder_path."""
+    if not img_url:
+        return None
+    try:
+        os.makedirs(folder_path, exist_ok=True)
+        # Extract extension from URL path, default to .jpg
+        ext = os.path.splitext(urlparse(img_url).path)[1] or ".jpg"
+        safe_prefix = "".join(c for c in filename_prefix if c.isalnum() or c in (' ', '_', '-')).strip()
+        file_path = Path(folder_path) / f"{safe_prefix}{ext}"
+        
+        resp = requests.get(img_url, timeout=10)
+        resp.raise_for_status()
+        
+        with open(file_path, "wb") as f:
+            f.write(resp.content)
+        return str(file_path)
+    except Exception as e:
+        print(f"Error saving {img_url}: {e}")
+        return None
+
 # --------------------
 # Site-specific scrapers
 # --------------------
 
-def Fastline(url_list, progress_callback=None):
+def Fastline(url_list, progress_callback=None, image_folder="downloaded_images"):
     equipment_list = []
     total = len(url_list)
     for i, link in enumerate(url_list):
@@ -18,12 +43,18 @@ def Fastline(url_list, progress_callback=None):
         equipment_dictionary = {}
 
         title_tag = x.find('title')
-        equipment_dictionary["Title"] = title_tag.get_text(strip=True)[5:] if title_tag else ''
+        title_text = title_tag.get_text(strip=True)[5:] if title_tag else ''
+        equipment_dictionary["Title"] = title_text
 
         image_div = x.find('div', class_='item', attrs={'data-index': '0'})
         image_src = image_div.img['src'] if image_div and image_div.img else ''
         equipment_dictionary["Image"] = f'=IMAGE("{image_src}")' if image_src else ''
+        
+        # Save local copy of the image
+        local_path = save_image(image_src, image_folder, f"{i+1}_{title_text[:50]}")
+        equipment_dictionary["Local Image Path"] = local_path or ''
 
+        # (… rest of your Fastline parsing logic for Year/Make/Model, Hours, etc.)
         def get_text(tag_label):
             tag = x.find('b', string=tag_label)
             return tag.next_sibling.strip() if tag and tag.next_sibling else ''
@@ -46,10 +77,11 @@ def Fastline(url_list, progress_callback=None):
 
         equipment_list.append(equipment_dictionary)
 
-        #Updating progress logic
         if progress_callback:
             progress_callback((i+1)/total)
+
     return equipment_list
+
 
 
 def Proxi_Bid(url_list, progress_callback=None):
