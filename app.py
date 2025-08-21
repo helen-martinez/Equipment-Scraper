@@ -227,7 +227,7 @@ if uploaded_file:
         st.success("Scraping complete!")
         st.dataframe(df_output)
 
-        template_path = "template.xlsm"  # Your macro-enabled Excel template
+        template_path = "scraping_template.xlsm"  # Your macro-enabled Excel template
 
         # Load the template workbook
         wb = openpyxl.load_workbook(template_path, keep_vba=True)
