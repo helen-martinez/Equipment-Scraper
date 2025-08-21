@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import io
+from io import BytesIO
+import zipfile
+import os
 
 # --------------------
 # Site-specific scrapers
@@ -23,29 +25,8 @@ def Fastline(url_list, progress_callback=None):
         image_src = image_div.img['src'] if image_div and image_div.img else ''
         equipment_dictionary["Image"] = f'"{image_src}"' if image_src else ''
 
-        def get_text(tag_label):
-            tag = x.find('b', string=tag_label)
-            return tag.next_sibling.strip() if tag and tag.next_sibling else ''
-
-        year = get_text('Year:')
-        make = get_text('Make:')
-        model = get_text('Model:')
-        hours = get_text('Hours:')
-        miles = get_text('Mileage:')
-
-        equipment_dictionary["Year/Make/Model"] = f"{year} {make} {model}".strip()
-        if hours and miles:
-            equipment_dictionary["Hours/Miles"] = f"{hours} HOURS, {miles} MILES"
-        elif hours:
-            equipment_dictionary["Hours/Miles"] = f"{hours} HOURS"
-        elif miles:
-            equipment_dictionary["Hours/Miles"] = f"{miles} MILES"
-        else:
-            equipment_dictionary["Hours/Miles"] = ''
-
         equipment_list.append(equipment_dictionary)
 
-        #Updating progress logic
         if progress_callback:
             progress_callback((i+1)/total)
     return equipment_list
@@ -164,6 +145,16 @@ def Wausau(url_list, progress_callback=None):
             progress_callback((i+1)/total)
     return equipment_list
 
+
+def download_image(url, filename):
+    try:
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        return filename, r.content
+    except Exception as e:
+        print(f"Failed: {url} - {e}")
+        return None
+
 # --------------------
 # Streamlit App
 # --------------------
@@ -215,7 +206,7 @@ if uploaded_file:
         st.success("Scraping complete!")
         st.dataframe(df_output)
 
-        excel_buffer = io.BytesIO()
+        excel_buffer = BytesIO()
         with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
             df_output.to_excel(writer, index=False, sheet_name="Scraped Data")
 
@@ -227,3 +218,27 @@ if uploaded_file:
             file_name="scraped_equipment.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+    # Build ZIP of images
+    images_to_download = []
+    for idx, row in df_output.iterrows():
+        img_field = str(row.get("Image", "")).strip('"')
+        if img_field:
+            ext = os.path.splitext(img_field)[1] or ".jpg"
+            fname = f"image_{idx+1}{ext}"
+            result = download_image(img_field, fname)
+            if result:
+                images_to_download.append(result)
+
+    if images_to_download:
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zipf:
+            for fname, content in images_to_download:
+                zipf.writestr(fname, content)
+        zip_buffer.seek(0)
+
+        st.download_button(
+            "Download Images (ZIP)",
+            data=zip_buffer,
+            file_name="scraped_images.zip",
+            mime="application/zip"
+        )        
