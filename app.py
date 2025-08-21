@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import io
 import openpyxl
+from openpyxl.cell.cell import Cell
 # --------------------
 # Site-specific scrapers
 # --------------------
@@ -243,7 +244,10 @@ if uploaded_file:
         # Write DataFrame to sheet starting at row 2
         for i, row in enumerate(df_output.values, start=2):
             for j, value in enumerate(row, start=1):
-                ws.cell.value(row=i, column=j, value=value)
+                if isinstance(value, str) and value.startswith('=IMAGE('):
+                    ws.cell(row=i, column=j).value  = value
+                else:
+                    ws.cell(row=i, column=j, value = value)
 
         # Save to buffer
         excel_buffer = io.BytesIO()
