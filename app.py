@@ -206,7 +206,11 @@ if uploaded_file:
                 equipment_list = Kerr_Mowrey_Witcher(url_list, update_progress)
             elif website == "Wausau":
                 equipment_list = Wausau(url_list, update_progress)
-
+            elif website == 'Quarrick':
+                equipment_list = Proxi_Bid(url_list, update_progress)
+            elif website == 'Superior Energy':
+                equipment_list = Proxi_Bid(url_list, update_progress)
+                
         df_output = pd.DataFrame(equipment_list)
         st.success("Scraping complete!")
         st.dataframe(df_output)
@@ -223,3 +227,4 @@ if uploaded_file:
             file_name="scraped_equipment.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
