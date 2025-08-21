@@ -227,7 +227,7 @@ if uploaded_file:
         st.success("Scraping complete!")
         st.dataframe(df_output)
 
-        template_path = "scraping_template.xlsm"  # Your macro-enabled Excel template
+        template_path = "scraping_template.xltm"  # Your macro-enabled Excel template
 
         # Load the template workbook
         wb = openpyxl.load_workbook(template_path, keep_vba=True)
@@ -254,7 +254,7 @@ if uploaded_file:
         st.download_button(
             label="Download Excel with Macros",
             data=excel_buffer,
-            file_name="scraped_equipment.xlsm",
+            file_name="scraped_equipment.xltm",
             mime="application/vnd.ms-excel.sheet.macroEnabled.12"
         )
 
