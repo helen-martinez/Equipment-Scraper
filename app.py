@@ -10,26 +10,24 @@ from urllib.parse import urlparse
 from pathlib import Path
 
 
-# Get the user's home directory in a cross-platform way
-home_dir = Path.home()
-
-# Point to the Downloads folder
-downloads_dir = home_dir / "Downloads"
-
-# Make sure it exists
-downloads_dir.mkdir(exist_ok=True)
-
-# Example: Save an image there
 def save_image(img_url, filename_prefix):
+    if not img_url:
+        return None
     try:
-        ext = os.path.splitext(img_url)[1] or ".jpg"
+        downloads_dir = Path.home() / "Downloads"
+        downloads_dir.mkdir(exist_ok=True)
+
+        # Determine extension from URL, fallback to .jpg
+        ext = os.path.splitext(urlparse(img_url).path)[1] or ".jpg"
         safe_prefix = "".join(c for c in filename_prefix if c.isalnum() or c in (' ', '_', '-')).strip()
         file_path = downloads_dir / f"{safe_prefix}{ext}"
-        
+
         resp = requests.get(img_url, timeout=10)
         resp.raise_for_status()
+
         with open(file_path, "wb") as f:
             f.write(resp.content)
+
         return str(file_path)
     except Exception as e:
         print(f"Error saving {img_url}: {e}")
@@ -40,7 +38,7 @@ def save_image(img_url, filename_prefix):
 # Site-specific scrapers
 # --------------------
 
-def Fastline(url_list, progress_callback=None, image_folder="pictures"):
+def Fastline(url_list, progress_callback=None):
     equipment_list = []
     total = len(url_list)
     for i, link in enumerate(url_list):
@@ -55,12 +53,8 @@ def Fastline(url_list, progress_callback=None, image_folder="pictures"):
         image_div = x.find('div', class_='item', attrs={'data-index': '0'})
         image_src = image_div.img['src'] if image_div and image_div.img else ''
         equipment_dictionary["Image"] = f'=IMAGE("{image_src}")' if image_src else ''
-        
-        # Save local copy of the image
-        local_path = save_image(image_src, image_folder, f"{i+1}_{title_text[:50]}")
-        equipment_dictionary["Local Image Path"] = local_path or ''
+        equipment_dictionary["Local Image Path"] = save_image(image_src, f"{i+1}_{title_text[:50]}")
 
-        # (… rest of your Fastline parsing logic for Year/Make/Model, Hours, etc.)
         def get_text(tag_label):
             tag = x.find('b', string=tag_label)
             return tag.next_sibling.strip() if tag and tag.next_sibling else ''
@@ -82,10 +76,8 @@ def Fastline(url_list, progress_callback=None, image_folder="pictures"):
             equipment_dictionary["Hours/Miles"] = ''
 
         equipment_list.append(equipment_dictionary)
-
         if progress_callback:
             progress_callback((i+1)/total)
-
     return equipment_list
 
 
