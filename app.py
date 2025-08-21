@@ -21,7 +21,7 @@ def Fastline(url_list, progress_callback=None):
 
         image_div = x.find('div', class_='item', attrs={'data-index': '0'})
         image_src = image_div.img['src'] if image_div and image_div.img else ''
-        equipment_dictionary["Image"] = f'=IMAGE("{image_src}")' if image_src else ''
+        equipment_dictionary["Image"] = f'IMAGE("{image_src}")' if image_src else ''
 
         def get_text(tag_label):
             tag = x.find('b', string=tag_label)
