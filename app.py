@@ -178,7 +178,6 @@ st.markdown("""
             """)
 
 uploaded_file = st.file_uploader("Upload a CSV file of URLs", type=["csv"])
-website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau"])
 website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau","Quarrick", "Superior Energy"])
 
 if uploaded_file:
