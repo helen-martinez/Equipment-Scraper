@@ -9,20 +9,27 @@ import os
 from urllib.parse import urlparse
 from pathlib import Path
 
-def save_image(img_url, folder_path, filename_prefix):
-    """Download an image from img_url and save it to folder_path."""
-    if not img_url:
-        return None
+import os
+from pathlib import Path
+
+# Get the user's home directory in a cross-platform way
+home_dir = Path.home()
+
+# Point to the Downloads folder
+downloads_dir = home_dir / "Downloads"
+
+# Make sure it exists
+downloads_dir.mkdir(exist_ok=True)
+
+# Example: Save an image there
+def save_image(img_url, filename_prefix):
     try:
-        os.makedirs(folder_path, exist_ok=True)
-        # Extract extension from URL path, default to .jpg
-        ext = os.path.splitext(urlparse(img_url).path)[1] or ".jpg"
+        ext = os.path.splitext(img_url)[1] or ".jpg"
         safe_prefix = "".join(c for c in filename_prefix if c.isalnum() or c in (' ', '_', '-')).strip()
-        file_path = Path(folder_path) / f"{safe_prefix}{ext}"
+        file_path = downloads_dir / f"{safe_prefix}{ext}"
         
         resp = requests.get(img_url, timeout=10)
         resp.raise_for_status()
-        
         with open(file_path, "wb") as f:
             f.write(resp.content)
         return str(file_path)
@@ -30,11 +37,12 @@ def save_image(img_url, folder_path, filename_prefix):
         print(f"Error saving {img_url}: {e}")
         return None
 
+
 # --------------------
 # Site-specific scrapers
 # --------------------
 
-def Fastline(url_list, progress_callback=None, image_folder="downloaded_images"):
+def Fastline(url_list, progress_callback=None, image_folder="c:\Users\HelenMartinez\Downloads\pictures"):
     equipment_list = []
     total = len(url_list)
     for i, link in enumerate(url_list):
