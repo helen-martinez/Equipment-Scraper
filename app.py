@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import io
-
+import openpyxl
 # --------------------
 # Site-specific scrapers
 # --------------------
@@ -164,6 +164,18 @@ def Wausau(url_list, progress_callback=None):
             progress_callback((i+1)/total)
     return equipment_list
 
+
+
+
+
+
+
+
+
+
+
+
+
 # --------------------
 # Streamlit App
 # --------------------
@@ -178,7 +190,7 @@ st.markdown("""
             """)
 
 uploaded_file = st.file_uploader("Upload a CSV file of URLs", type=["csv"])
-website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau","Quarrick", "Superior Energy"])
+website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau", "Quarrick", "Superior Energy"])
 
 if uploaded_file:
     df_input = pd.read_csv(uploaded_file, header=None)
@@ -210,12 +222,55 @@ if uploaded_file:
                 equipment_list = Proxi_Bid(url_list, update_progress)
             elif website == 'Superior Energy':
                 equipment_list = Proxi_Bid(url_list, update_progress)
-                
+
         df_output = pd.DataFrame(equipment_list)
         st.success("Scraping complete!")
         st.dataframe(df_output)
 
+        template_path = "template.xlsm"  # Your macro-enabled Excel template
+
+        # Load the template workbook
+        wb = openpyxl.load_workbook(template_path, keep_vba=True)
+
+        # Select the sheet where you want to write the data
+        ws = wb["Scraped Data"]  # Adjust if your sheet has a different name
+
+        # Optional: Clear existing rows starting from row 2
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+            for cell in row:
+                cell.value = None
+
+        # Write DataFrame to sheet starting at row 2
+        for i, row in enumerate(df_output.values, start=2):
+            for j, value in enumerate(row, start=1):
+                ws.cell(row=i, column=j, value=value)
+
+        # Save to buffer
         excel_buffer = io.BytesIO()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+
+        # Download button
+        st.download_button(
+            label="Download Excel with Macros",
+            data=excel_buffer,
+            file_name="scraped_equipment.xlsm",
+            mime="application/vnd.ms-excel.sheet.macroEnabled.12"
+        )
+
+    
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        ''' excel_buffer = io.BytesIO()
         with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
             df_output.to_excel(writer, index=False, sheet_name="Scraped Data")
 
@@ -226,6 +281,4 @@ if uploaded_file:
             data=excel_buffer,
             file_name="scraped_equipment.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-
-
+        )'''
