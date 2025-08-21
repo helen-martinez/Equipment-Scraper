@@ -9,8 +9,6 @@ import os
 from urllib.parse import urlparse
 from pathlib import Path
 
-import os
-from pathlib import Path
 
 # Get the user's home directory in a cross-platform way
 home_dir = Path.home()
@@ -42,7 +40,7 @@ def save_image(img_url, filename_prefix):
 # Site-specific scrapers
 # --------------------
 
-def Fastline(url_list, progress_callback=None, image_folder="c:\Users\HelenMartinez\Downloads\pictures"):
+def Fastline(url_list, progress_callback=None, image_folder="pictures"):
     equipment_list = []
     total = len(url_list)
     for i, link in enumerate(url_list):
