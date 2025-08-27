@@ -221,7 +221,7 @@ def Assiter(url_list, progress_callback=None):
     return equipment_list, image_urls
 
 
-def Kerr_Mowrey_Witcher(url_list, progress_callback=None):
+def Kerr_Mowrey_Witcher_Ritchason(url_list, progress_callback=None):
     equipment_list = []
     image_urls = []
     total = len(url_list)
@@ -398,7 +398,7 @@ if "zip_buffer" not in st.session_state:
     st.session_state.zip_buffer = None
 
 uploaded_file = st.file_uploader("Upload a CSV file of URLs", type=["csv"])
-website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau","Quarrick", "Superior Energy"])
+website = st.selectbox("Select website type", ["Fastline", "Proxi_Bid", "Assiter", "Kerr", "Mowrey", "Witcher", "Wausau","Quarrick", "Superior Energy", 'Ritchason'])
 
 if uploaded_file:
     df_input = pd.read_csv(uploaded_file, header=None)
@@ -420,8 +420,8 @@ if uploaded_file:
                 equipment_list, image_urls = Proxi_Bid(url_list, update_progress)
             elif website == "Assiter":
                 equipment_list, image_urls = Assiter(url_list, update_progress)
-            elif website in ["Kerr", "Mowrey", "Witcher"]:
-                equipment_list, image_urls = Kerr_Mowrey_Witcher(url_list, update_progress)
+            elif website in ["Kerr", "Mowrey", "Witcher", 'Ritchason']:
+                equipment_list, image_urls = Kerr_Mowrey_Witcher_Ritchason(url_list, update_progress)
             elif website == "Wausau":
                 equipment_list, image_urls = Wausau(url_list, update_progress)
             elif website == 'Quarrick':
