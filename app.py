@@ -194,10 +194,10 @@ def Assiter(url_list, progress_callback=None):
         desc_meta = soup.find("meta", property="og:description")
         if desc_meta and desc_meta.get("content"):
             desc_text = desc_meta["content"]
-            hours_match = re.search(r'([\d,]+\.\d+|[\d,]+)\s*Hours', desc_text, re.IGNORECASE)
-            miles_match = re.search(r'Odo Reads:\s*([\d,]+\.\d+|[\d,]+)', desc_text, re.IGNORECASE)
+            hours_match = re.search(r'([\d,]+\.\d+|[\d,]+)\s*(Hours|Hourmeter)', desc_text, re.IGNORECASE)
+            miles_match = re.search(r'(Odo Reads: | Odometer:?)\s*([\d,]+\.\d+|[\d,]+)', desc_text, re.IGNORECASE)
             hours = f"{hours_match.group(1)} HOURS" if hours_match else ''
-            miles = f"{miles_match.group(1)} MILES" if miles_match else ''
+            miles = f"{miles_match.group(2)} MILES" if miles_match else ''
             if hours and miles:
                 equipment_dictionary["Hours/Miles"] = f"{hours}, {miles}"
             elif hours:
@@ -253,6 +253,10 @@ def Kerr_Mowrey_Witcher_Ritchason(url_list, progress_callback=None):
         title_meta = soup.find("meta", property="og:title")
         if title_meta and title_meta.get("content"):
             title_text = title_meta["content"].strip()
+
+            #Removing serial number if it starts with '#'
+            title_text = re.sub(r'\s*#\S+', '', title_text)
+
             equipment_dictionary["Title"] = title_text
 
             # Improved Year/Make/Model split (same logic as Assiter)
